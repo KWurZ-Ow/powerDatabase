@@ -8,7 +8,9 @@ const Table = new Schema({
         unite: String,
         case: String
     }],
-    orders: [{
+    players: [{
+        socketId: String,
+        name: String,
         color: String,
         order: Array
     }],

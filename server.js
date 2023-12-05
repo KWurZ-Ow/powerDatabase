@@ -5,7 +5,7 @@ mongoose.connect("mongodb://localhost/powerV3")
 
 const io = require("socket.io")(3001, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: ["http://localhost:3000", "https://powerdatabase.onrender.com"],
         methods: ["GET", "POST"]
     }
 })
@@ -13,22 +13,38 @@ const io = require("socket.io")(3001, {
 io.on("connection", socket => {
     console.log(`${socket.id} connected`)
 
-    //table
+
     socket.on("createTable", async (name) => {
         console.log("creating table...")
         await createTable(name)
     })
-    socket.on("joinTable", async (tableName) => {
-        socket.join(tableName)
-
+    socket.on("seekTables", async (cb) => {
+        let tables = await Table.find()
+        cb(tables)
+    })
+    socket.on("joinTable", async (tableName, cb) => {
         let table = await findTableData(tableName)
         if (!table) return
-        socket.emit("loadPieces", table.pieces, table.logs)
 
+        socket.join(tableName)
+        console.log(`${socket.id} joined table ${tableName}`)
+        cb(table)
+
+        socket.on("register", async (tableName, color) => {
+            await Table.findOneAndUpdate(
+                { name: tableName, "players.color": color },
+                { $set: { "players.$.socketId": socket.id }},
+                { new: true }
+            ).then((updatedTable) => {
+                console.log(updatedTable.players)
+                socket.to(tableName).emit("tableUpdated", updatedTable)
+                console.log(`Joueur ${socket.id} registered as ${color}`)
+            }).catch((err) => {
+                console.error("Erreur lors de la mise à jour :", err);
+            });
+        })
         socket.on("saveData", async (pieces, logs) => {
-            console.log(`pieces saved`)
             await Table.findOneAndUpdate({ name: tableName }, { pieces, logs })
-            console.log("updated");
         })
     })
 
@@ -39,6 +55,7 @@ io.on("connection", socket => {
         if (table) return table
         console.log("pas trouvé la table")
     }
+
     async function createTable(name) {
         console.log(name)
         const table = new Table({
@@ -79,13 +96,17 @@ io.on("connection", socket => {
                     })}`
                 }
             ],
-            orders: [
+            players: [
                 {
+                    name: "Marius",
                     color: "green",
+                    socketId: "",
                     order: []
                 },
                 {
+                    name: "Ulysse",
                     color: "blue",
+                    socketId: "",
                     order: []
                 },
             ]
@@ -100,9 +121,4 @@ io.on("connection", socket => {
             throw error;
         }
     }
-
-    //mobile
-    socket.on("register", (color) => {
-        console.log(`Joueur ${socket.id} registered as ${color}`)
-    })
 })
