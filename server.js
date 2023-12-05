@@ -36,7 +36,6 @@ io.on("connection", socket => {
                 { $set: { "players.$.socketId": socket.id }},
                 { new: true }
             ).then((updatedTable) => {
-                console.log(updatedTable.players)
                 socket.to(tableName).emit("tableUpdated", updatedTable)
                 console.log(`Joueur ${socket.id} registered as ${color}`)
             }).catch((err) => {
