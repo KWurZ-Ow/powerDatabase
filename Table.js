@@ -4,9 +4,8 @@ const Table = new Schema({
     name: String,
     creationDate: Date,
     pieces: [{
-        _id: String,
-        type: String,
         color: String,
+        unite: String,
         case: String
     }],
     orders: [{
@@ -14,10 +13,9 @@ const Table = new Schema({
         order: Array
     }],
     logs: [{
-        _id: String,
         color: String,
         content: String
     }]
-})
+});
 
 module.exports = model("Table", Table)
