@@ -5,7 +5,7 @@ mongoose.connect("mongodb://localhost/powerV3")
 
 const io = require("socket.io")(3001, {
     cors: {
-        origin: ["http://localhost:3000", "https://powerdatabase.onrender.com"],
+        origin: "*",
         methods: ["GET", "POST"]
     }
 })
