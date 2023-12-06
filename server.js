@@ -1,9 +1,12 @@
 const mongoose = require("mongoose")
 const Table = require("./Table")
+const port = process.env.PORT || 3000;
 
-mongoose.connect("mongodb://localhost/powerV3")
+console.log(`Running on port ${port}`)
 
-const io = require("socket.io")(3001, {
+mongoose.connect("mongodb+srv://powerdatabase-main-db-02aab9c7e91:XHZeyj9xfCbdRHD6XU2G9zHrE4qDHh@prod-us-central1-3.yr9so.mongodb.net/powerdatabase-main-db-02aab9c7e91")
+
+const io = require("socket.io")(port, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
