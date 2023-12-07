@@ -1,10 +1,12 @@
 const mongoose = require("mongoose")
 const Table = require("./Table")
 const port = process.env.PORT || 3000;
+const isProdDatabase = true
+const mongoUrl = isProdDatabase ? "mongodb+srv://powerdatabase-main-db-02aab9c7e91:XHZeyj9xfCbdRHD6XU2G9zHrE4qDHh@prod-us-central1-3.yr9so.mongodb.net/powerdatabase-main-db-02aab9c7e91" : "mongodb://localhost/powerV3"
 
 console.log(`Running on port ${port}`)
 
-mongoose.connect("mongodb+srv://powerdatabase-main-db-02aab9c7e91:XHZeyj9xfCbdRHD6XU2G9zHrE4qDHh@prod-us-central1-3.yr9so.mongodb.net/powerdatabase-main-db-02aab9c7e91")
+mongoose.connect(mongoUrl)
 
 const io = require("socket.io")(port, {
     cors: {
@@ -25,9 +27,15 @@ io.on("connection", socket => {
         let tables = await Table.find()
         cb(tables)
     })
-    socket.on("joinTable", async (tableName, cb) => {
+    socket.on("joinTable", async (tableName, wipe, cb) => {
         let table = await findTableData(tableName)
         if (!table) return
+
+        if (wipe) {
+            await Table.updateMany({}, {
+                $set: { 'players.$[].socketId': '' }
+            }, { multi: true });
+        }
 
         socket.join(tableName)
         console.log(`${socket.id} joined table ${tableName}`)
@@ -36,7 +44,7 @@ io.on("connection", socket => {
         socket.on("register", async (tableName, color) => {
             await Table.findOneAndUpdate(
                 { name: tableName, "players.color": color },
-                { $set: { "players.$.socketId": socket.id }},
+                { $set: { "players.$.socketId": socket.id } },
                 { new: true }
             ).then((updatedTable) => {
                 socket.to(tableName).emit("tableUpdated", updatedTable)
