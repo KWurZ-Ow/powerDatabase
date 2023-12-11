@@ -27,16 +27,16 @@ io.on("connection", socket => {
         cb(tables)
     })
     socket.on("joinTable", async (tableName, wipe, cb) => {
-        socket.leaveAll(socket.rooms)
         let table = await findTableData(tableName)
         if (!table) return
         
         if (wipe) {
+            socket.leaveAll(socket.rooms)
             await Table.updateMany({}, {
                 $set: { 'players.$[].socketId': '' }
             }, { multi: true });
             table = await findTableData(tableName)
-            socket.to(tableName).emit("tableUpdated", table)
+            socket.to(tableName).emit("tableUpdated", table, true)
             console.log("wiped users");
         }
         
@@ -51,15 +51,16 @@ io.on("connection", socket => {
                 { new: true }
             ).then((updatedTable) => {
                 console.log(`Joueur ${socket.id} registered as ${color}`)
-                socket.broadcast.to(tableName).emit("tableUpdated", updatedTable)
+                socket.broadcast.to(tableName).emit("tableUpdated", updatedTable, false)
             }).catch((err) => {
                 console.error("Erreur lors de la mise à jour :", err);
             });
         })
         socket.on("saveData", async (pieces, logs) => {
+            console.log("saving data...")
             await Table.findOneAndUpdate({ name: tableName }, { pieces, logs })
         })
-
+    
         socket.on("disconnect", async () => {
             console.log(`${socket.id} disconnected`)
             await Table.findOneAndUpdate(
@@ -69,7 +70,7 @@ io.on("connection", socket => {
             ).then((updatedTable) => {
                 if (updatedTable) {
                     console.log("joueur déconnecté");
-                    socket.to(tableName).emit("tableUpdated", updatedTable)
+                    socket.to(tableName).emit("tableUpdated", updatedTable, false)
                 }
             }).catch((err) => {
                 console.error("Erreur lors de la mise à jour :", err);
