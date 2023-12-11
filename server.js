@@ -56,6 +56,19 @@ io.on("connection", socket => {
                 console.error("Erreur lors de la mise à jour :", err);
             });
         })
+        socket.on("unRegister", async (tableName, color, cb) => {
+            await Table.findOneAndUpdate(
+                { name: tableName, "players.color": color },
+                { $set: { "players.$.socketId": "" } },
+                { new: true }
+            ).then((updatedTable) => {
+                console.log(`Joueur ${socket.id} freed ${color}`)
+                socket.to(tableName).emit("tableUpdated", updatedTable, false)
+                cb(updatedTable)
+            }).catch((err) => {
+                console.error("Erreur lors de la mise à jour :", err);
+            });
+        })
         socket.on("saveData", async (pieces, logs) => {
             console.log("saving data...")
             await Table.findOneAndUpdate({ name: tableName }, { pieces, logs })
