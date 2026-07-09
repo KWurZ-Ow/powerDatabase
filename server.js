@@ -1,5 +1,3 @@
-const http = require('http')
-const cors = require('cors')
 const mongoose = require("mongoose")
 const Table = require("./Table")
 const port = process.env.PORT || 3001;
@@ -9,10 +7,12 @@ const mongoUrl = isProdDatabase ? "mongodb+srv://kwurz:94394gtJodVFda7w@powermon
 console.log(`Running on port ${port}`)
 
 mongoose.connect(mongoUrl)
+    .then(() => console.log("✅ Connexion MongoDB réussie"))
+    .catch(err => console.error("❌ Erreur MongoDB:", err));
 
 const io = require("socket.io")(port, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: "*",
         methods: ["GET", "POST"]
     }
 })
