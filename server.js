@@ -1,3 +1,5 @@
+const http = require('http')
+const cors = require('cors')
 const mongoose = require("mongoose")
 const Table = require("./Table")
 const port = process.env.PORT || 3001;
@@ -10,7 +12,7 @@ mongoose.connect(mongoUrl)
 
 const io = require("socket.io")(port, {
     cors: {
-        origin: "*",
+        origin: "http://localhost:3000",
         methods: ["GET", "POST"]
     }
 })
