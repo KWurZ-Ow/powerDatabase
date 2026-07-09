@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 const Table = require("./Table")
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const isProdDatabase = true
 const mongoUrl = isProdDatabase ? "mongodb+srv://powerdatabase-main-db-02aab9c7e91:XHZeyj9xfCbdRHD6XU2G9zHrE4qDHh@prod-us-central1-3.yr9so.mongodb.net/powerdatabase-main-db-02aab9c7e91" : "mongodb://localhost/powerV3"
 
