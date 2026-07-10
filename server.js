@@ -4,7 +4,7 @@ const port = process.env.PORT || 3001;
 const isProdDatabase = true
 const mongoUrl = isProdDatabase ? "mongodb+srv://kwurz:94394gtJodVFda7w@powermongo.r5xxxxu.mongodb.net/?appName=powerMongo" : "mongodb://localhost/powerV3"
 
-console.log(`Running on port ${port}`)
+console.log(`☑️  Running on port ${port}`)
 
 mongoose.connect(mongoUrl)
     .then(() => console.log("✅ Connexion MongoDB réussie"))
@@ -18,7 +18,7 @@ const io = require("socket.io")(port, {
 })
 
 io.on("connection", socket => {
-    console.log(`${socket.id} connected`)
+    console.log(`🟢 ${socket.id} connected`)
 
     socket.on("createTable", async (name) => {
         console.log("creating table...")
@@ -39,11 +39,11 @@ io.on("connection", socket => {
             }, { multi: true });
             table = await findTableData(tableName)
             socket.to(tableName).emit("tableUpdated", table, true)
-            console.log("wiped users");
+            console.log("🗑️  wiped users");
         }
         
         socket.join(tableName)
-        console.log(`${socket.id} joined table ${tableName}`)
+        console.log(`➡️  ${socket.id} joined table ${tableName}`)
         cb(table)
 
         socket.on("register", async (tableName, color) => {
@@ -72,12 +72,12 @@ io.on("connection", socket => {
             });
         })
         socket.on("saveData", async (pieces, logs) => {
-            console.log("saving data...")
+            console.log("💾 saving data...")
             await Table.findOneAndUpdate({ name: tableName }, { pieces, logs })
         })
     
         socket.on("disconnect", async () => {
-            console.log(`${socket.id} disconnected`)
+            console.log(`🔴 ${socket.id} disconnected`)
             await Table.findOneAndUpdate(
                 { "players.socketId": socket.id },
                 { $set: { "players.$.socketId": '' } },
